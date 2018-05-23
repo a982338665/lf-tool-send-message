@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper    
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"    
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="SendMsgLog">
+   <sql id="dynamicWhere">
+			<where>
+                1=1
+		       <if test="id != null"> and id=#{id}</if>
+				 <if test="mobile != null"> and mobile=#{mobile}</if>
+				 <if test="contextWs != null"> and context_ws=#{contextWs}</if>
+				 <if test="sendStatus != null"> and send_status=#{sendStatus}</if>
+				 <if test="sequenceId != null"> and sequence_id=#{sequenceId}</if>
+			</where>
+	</sql>
+	     
+	<sql id="dynamicSet">
+		<set>
+			<if test="mobile != null" > 
+			  mobile=#{mobile},
+			</if>
+			<if test="contextWs != null" > 
+			  context_ws=#{contextWs},
+			</if>
+			<if test="sendStatus != null" > 
+			  send_status=#{sendStatus},
+			</if>
+			<if test="sequenceId != null" > 
+			  sequence_id=#{sequenceId},
+			</if>
+		</set>
+	</sql>
+	
+	<sql id="allColumn">
+	    <trim prefix="(" suffix=")" suffixOverrides=",">
+						<if test="id != null"> id,</if>
+						<if test="mobile != null"> mobile,</if>
+						<if test="contextWs != null"> context_ws,</if>
+						<if test="sendStatus != null"> send_status,</if>
+						<if test="sequenceId != null"> sequence_id,</if>
+		</trim>
+	</sql>
+	
+	<sql id="allColumnVar">
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+		    			<if test="id != null"> #{id},</if>
+						<if test="mobile != null"> #{mobile},</if>
+						<if test="contextWs != null"> #{contextWs},</if>
+						<if test="sendStatus != null"> #{sendStatus},</if>
+						<if test="sequenceId != null"> #{sequenceId},</if>
+				</trim>
+	</sql>
+	
+	<insert id="insert"  parameterType="com.tsb.ischool.msglog.model.SendMsgLog">
+		insert into send_msg_log
+		<include refid="allColumn"/>
+		<include refid="allColumnVar"/>
+	</insert>
+	
+	<update id="update" parameterType="com.tsb.ischool.msglog.model.SendMsgLog">
+	     update send_msg_log
+	     <include refid="dynamicSet"/>
+	     where 
+	     create_time>=DATE_ADD(curdate(),interval -day(curdate())+1 day) and create_time &lt;last_day(curdate())+interval 1 day
+	     
+	     and id=#{id}
+	</update>
+	
+	<select id="queryById" parameterType="String" resultType="com.tsb.ischool.msglog.model.SendMsgLog" >
+		select 
+			*
+		from 
+			send_msg_log 
+		where id=#{value}
+	</select>
+	
+	<select id="query" parameterType="com.tsb.ischool.msglog.webservice.c2sbean.C2SSendMsgLog" resultType="com.tsb.ischool.msglog.model.SendMsgLog">
+		select 
+			*
+		from
+			 send_msg_log 
+		<include refid="dynamicWhere"/>
+	</select>
+	
+	<select id="query_count" parameterType="com.tsb.ischool.msglog.webservice.c2sbean.C2SSendMsgLog" resultType="int">
+		select 
+			count(1)
+		from 
+			send_msg_log
+		<include refid="dynamicWhere"/>
+	</select>
+	
+	<delete id="deletelogicById" parameterType="String">
+		update send_msg_log
+	    set isused = 0
+	    where id=#{value}
+	</delete>
+	
+	<delete id="deleteById" parameterType="String">
+		delete from send_msg_log where id=#{value}
+	</delete>
+	
+	<insert id="insertSequence"  parameterType="com.tsb.ischool.msglog.model.SendMsgLog">
+		INSERT INTO send_msg_sequence (
+				sequence_id,return_result
+			) VALUES (
+				#{sequenceId}, #{returnResult}
+			)
+	</insert>
+	
+	
+</mapper>

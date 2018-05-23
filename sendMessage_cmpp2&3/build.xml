@@ -1,0 +1,163 @@
+<?xml version="1.0"?>
+<project basedir="." name="TSB_ISCHOOL_SENDMSG_SERVER" default="66">
+
+	<tstamp prefix="now">
+		<format property="day" pattern="yyyy-MM-dd" />
+		<format property="time" pattern="HH:mm:ss" />
+		<format property="dm" pattern="yyyyMMdd.HHmmss" />
+		<format property="ds" pattern="yyyy-MM-dd HH:mm:ss" />
+	</tstamp>
+
+	<property name="version" value="3.0" />
+
+	<property name="src.dir" value="${basedir}/src"  />
+	<property name="framework_src.dir" value="${basedir}/framework_src"  />
+	<property name="build.dir" value="${basedir}/build" />
+	<property name="tomcatapp.dir" value="D:\work\apache-tomcat-7.0.68\webapps" />
+	<property name="dist.dir" value="${basedir}/dist" />
+	<property name="lib.dir" value="${basedir}/WebRoot/WEB-INF/lib" />
+	<property name="config.dir" value="${basedir}/conf" />
+	<property name="tmp.dir" location="${basedir}/temp" />
+
+
+	<property name="config.file" value="ApplicationResources.properties" />
+	<property name="log4j.file" value="log4j.properties" />
+	<property name="redis.file" value="redis.properties" />
+
+
+	<path id="classpath">
+		<fileset dir="${basedir}/WebRoot/WEB-INF/lib">
+			<include name="**/*.jar" />
+		</fileset>
+	</path>
+
+	<target name="66">
+		<property name="portsocket" value="${portsocket}" />
+		
+		<property name="prefix_logpath" value="/home/mooclogs/" />
+		<property name="redis_host" value="172.16.27.8" />
+		<property name="prefix_center_file" value="${prefix_center_file}" />
+		<property name="ip_outer_fileserver" value="${ip_outer_fileserver}" />
+		<property name="ip_inner_iworker" value="${ip_inner_iworker}" />
+		<property name="ip_inner_impushserver" value="10.0.10.89:8020" />
+	
+		<property name="configFile" value="ApplicationResources.dyn.properties" />
+		<property name="log4jFile" value="log4j.dyn.properties" />
+		<property name="redisFile" value="redis.dyn.properties" />
+		
+		<antcall target="dynamic.configuration" />
+		<antcall target="webapp" />
+		<antcall target="post_build"/>
+	</target>
+	
+	<target name="init">
+		<mkdir dir="${build.dir}" />
+		<mkdir dir="${build.dir}/jsp" />
+		<mkdir dir="${build.dir}/WEB-INF" />
+		<mkdir dir="${build.dir}/WEB-INF/classes" />
+		<mkdir dir="${build.dir}/WEB-INF/lib" />
+		<mkdir dir="${dist.dir}" />
+	</target>
+
+	<target name="web.compile">
+		<javac target="1.7" debug="true" srcdir="${framework_src.dir}" destdir="${build.dir}/WEB-INF/classes" encoding="UTF-8">
+					<include name="**/*.java"/>
+					<classpath refid="classpath"/>
+		</javac>
+		<javac target="1.7" debug="true" srcdir="${src.dir}" destdir="${build.dir}/WEB-INF/classes" encoding="UTF-8">
+			<include name="**/*.java"/>
+			<classpath refid="classpath"/>
+		</javac>
+	</target>
+	
+	<target name="web.copy">
+		<!--copy porperties -->
+		<copy todir="${build.dir}/WEB-INF/classes" flatten="true" overwrite="true">
+			<fileset dir="${src.dir}">
+				<include name="*.properties" />
+				<include name="*.xml" />
+				<exclude name="ApplicationResources.properties"/>
+			</fileset>
+		</copy>
+		<copy todir="${build.dir}/WEB-INF/classes/com/tsb/ischool/sys/model/" flatten="true" overwrite="true">
+			<fileset dir="${src.dir}/com/tsb/ischool/sys/model/">
+				<include name="*.xml" />
+			</fileset>
+		</copy>
+		<!-- copy jar -->
+		<copy todir="${build.dir}/WEB-INF/lib" flatten="true" overwrite="true">
+			<fileset dir="${lib.dir}">
+				<exclude name="servlet-api.jar" />
+			</fileset>
+		</copy>
+		<!-- copy js, jsp, images etc -->
+		<copy todir="${build.dir}" overwrite="true">
+			<fileset dir="${basedir}/WebRoot">
+				<exclude name="WEB-INF/classes/**/*.*"/>
+			</fileset>
+		</copy>
+
+		<copy file="${config.dir}/${configFile}" tofile="${build.dir}/WEB-INF/classes/${config.file}" overwrite="true" />
+		<copy file="${config.dir}/${log4jFile}" tofile="${build.dir}/WEB-INF/classes/${log4j.file}" overwrite="true" />
+		<copy file="${config.dir}/${redisFile}" tofile="${build.dir}/WEB-INF/classes/${redis.file}" overwrite="true" />
+	</target>
+	
+	<target name="unityversion" depends="lastrev">
+		<replace encoding="utf-8"  file="${build.dir}/version.html" token="#Version" value="${version}.${now.dm}"/>
+		<replace encoding="utf-8"  file="${build.dir}/version.html" token="#Build-Time" value="${now.ds}"/>
+		<replace encoding="utf-8"  file="${build.dir}/version.html" token="#Context" value="${ant.project.name}"/>
+		<replace encoding="utf-8"  file="${build.dir}/version.html" token="#LastRev-Info" value="${lastrevinfo}"/>
+	</target>
+	
+	<target name = "dynamic.configuration" depends="clean, init, web.compile,web.copy,unityversion">
+		<replace encoding="utf-8"  file="${build.dir}/WEB-INF/classes/${config.file}" token="#PREFIX_CENTER_FILE" value="${prefix_center_file}"/>
+		<replace encoding="utf-8"  file="${build.dir}/WEB-INF/classes/${config.file}" token="#IP_OUTER_FILESERVER" value="${ip_outer_fileserver}"/>
+		<replace encoding="utf-8"  file="${build.dir}/WEB-INF/classes/${config.file}" token="#IP_INNER_IWORKER" value="${ip_inner_iworker}"/>
+		<replace encoding="utf-8"  file="${build.dir}/WEB-INF/classes/${config.file}" token="#IP_INNER_IMPUSHSERVER" value="${ip_inner_impushserver}"/>
+		
+		<replace encoding="utf-8"  file="${build.dir}/WEB-INF/classes/${log4j.file}" token="#PREFIX_LOGPATH" value="${prefix_logpath}"/>
+		<replace encoding="utf-8"  file="${build.dir}/WEB-INF/classes/${redis.file}" token="#REDIS_HOST" value="${redis_host}"/>
+		
+	</target>
+
+	<target name="webapp">
+		<jar destfile="${dist.dir}/${ant.project.name}.war" basedir="${build.dir}" >
+			<manifest>
+				<attribute name="Version" value="${version}.${now.dm}" />
+				<attribute name="Build-Time" value="${now.ds}"/>
+			</manifest>
+		</jar>
+
+	</target>
+
+	<target name="warmove">
+		<copy file="${dist.dir}/${ant.project.name}.war" tofile="${tomcatapp.dir}/${ant.project.name}.war" overwrite="true" />
+	</target>
+	<target name="warpub">
+		<copy file="${dist.dir}/${ant.project.name}.war" tofile="${pub.dir}/${ant.project.name}.war" overwrite="true" />
+	</target>
+
+	<target name="post_build">
+		<delete dir="${build.dir}" />
+	</target>
+
+	<target name="clean">
+		<delete dir="${build.dir}" />
+		<delete file="${dist.dir}/${ant.project.name}.war" />
+		<!--
+		<delete file="${tomcatapp.dir}/${ant.project.name}.war" />
+		<delete dir="${tomcatapp.dir}/${ant.project.name}" />
+		-->
+	</target>
+				
+	<target name="lastrev" >  
+    	<!-- 
+        <svn refid="svn.setting">  
+        	<info target="../" />
+        </svn>-->
+        
+    	<exec executable="E:\tools\Apache-Subversion-1.8.13\bin\svn.exe" outputproperty="lastrevinfo">
+    		<arg line="info ${basedir}"/>
+    	</exec>
+    </target> 
+</project>

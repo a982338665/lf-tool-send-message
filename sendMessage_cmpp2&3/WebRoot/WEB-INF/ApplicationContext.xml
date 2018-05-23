@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans default-autowire="byName" xmlns="http://www.springframework.org/schema/beans"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xmlns:jee="http://www.springframework.org/schema/jee"
+		xmlns:aop="http://www.springframework.org/schema/aop"
+		xmlns:tx="http://www.springframework.org/schema/tx"
+		xmlns:p="http://www.springframework.org/schema/p"
+		xmlns:context="http://www.springframework.org/schema/context" 
+		xmlns:mvc="http://www.springframework.org/schema/mvc" 
+		xsi:schemaLocation="http://www.springframework.org/schema/beans
+			http://www.springframework.org/schema/beans/spring-beans.xsd
+			http://www.springframework.org/schema/jee
+			http://www.springframework.org/schema/jee/spring-jee.xsd
+			http://www.springframework.org/schema/context 
+			http://www.springframework.org/schema/context/spring-context-3.0.xsd 
+			http://www.springframework.org/schema/mvc 
+			http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd
+			http://www.springframework.org/schema/tx
+			http://www.springframework.org/schema/tx/spring-tx.xsd
+			http://www.springframework.org/schema/aop
+			http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+	<!-- 定义数据源 -->
+	<!--  
+	<jee:jndi-lookup id="dataSource" jndi-name="jdbc/resteasy"/>
+	-->
+	<import resource="classpath:springmvc-resteasy.xml"/>
+	<context:component-scan base-package="com.tsb.ischool.*" />
+	<context:property-placeholder location="classpath:redis.properties" />
+	<!-- 开启事务注解驱动 --> 
+	<!-- <tx:annotation-driven /> -->
+	<!-- <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">       
+	    <property name="driverClassName" value="com.mysql.jdbc.Driver" />      
+	    <property name="url" value="jdbc:mysql://127.0.0.1:3306/resteasy" />      
+	    <property name="username" value="root" />      
+	    <property name="password" value="root" />    
+	    <property name="maxActive" value="20"></property>  
+	    <property name="maxIdle" value="3"></property>
+	    <property name="maxWait" value="1000"></property>
+	</bean>   -->
+	
+	<bean id="readDataSource" class="org.springframework.jndi.JndiObjectFactoryBean">
+		<property name="jndiName">
+		    <value>java:comp/env/jdbc/mysql_u_tsb_r</value>
+		</property>
+		 <property name="resourceRef"><value>true</value></property>
+	</bean>  
+	
+	<bean id="writeDataSource" class="org.springframework.jndi.JndiObjectFactoryBean">
+		<property name="jndiName">
+		    <value>java:comp/env/jdbc/mysql_u_tsb_w</value>
+		</property>
+		 <property name="resourceRef"><value>true</value></property>
+	</bean> 
+	<bean id="readWriteDataSource" class="com.tsb.ischool.framework.common.ReadWriteDataSource">
+		<property name="writeDataSource" ref="writeDataSource"/>  
+		 <property name="readDataSourceMap">  
+	       <map>  
+	          <entry key="readDataSource" value-ref="readDataSource"/>  
+	       </map>  
+    </property>  
+	</bean>
+	
+	<!-- start redis配置  -->
+	<bean id="poolConfig" class="redis.clients.jedis.JedisPoolConfig">  
+        <property name="maxIdle" value="${redis.maxIdle}" />  
+        <property name="maxActive" value="${redis.maxActive}" />  
+        <property name="maxWait" value="${redis.maxWait}" />  
+        <property name="testOnBorrow" value="${redis.testOnBorrow}" />  
+    </bean>
+    
+    <bean id="connectionFactory" class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory"  
+        p:host-name="${redis.host}" p:port="${redis.port}" p:password="${redis.pass}"  p:pool-config-ref="poolConfig" />  
+      
+    <bean id="redisTemplate" class="org.springframework.data.redis.core.StringRedisTemplate">  
+        <property name="connectionFactory"   ref="connectionFactory" />  
+    </bean>
+    <!-- end redis配置  -->
+	
+	<!-- enable the configuration of transactional behavior based on annotations -->
+	<tx:annotation-driven transaction-manager="txManager"/>
+	
+	<!-- a PlatformTransactionManager is still required -->
+	<bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<!-- (this dependency is defined somewhere else) -->
+		<property name="dataSource" ref="readWriteDataSource"/>
+	</bean>
+	
+	<tx:advice id="defaultTxAdvice" transaction-manager="txManager">
+		<tx:attributes>
+			<tx:method name="save*" propagation="REQUIRED" />  
+	        <tx:method name="add*" propagation="REQUIRED" />  
+	        <tx:method name="create*" propagation="REQUIRED" />  
+	        <tx:method name="insert*" propagation="REQUIRED" />  
+	        <tx:method name="update*" propagation="REQUIRED" />  
+	        <tx:method name="modify*" propagation="REQUIRED" />  
+	        <tx:method name="del*" propagation="REQUIRED" />  
+	        <tx:method name="remove*" propagation="REQUIRED" />  
+	          
+	        <tx:method name="query*" read-only="true"/>  
+	        <tx:method name="use*" read-only="true"/>  
+	        <tx:method name="get*" read-only="true" />  
+	        <tx:method name="count*" read-only="true" />  
+	        <tx:method name="find*" read-only="true" />  
+	        <tx:method name="list*" read-only="true" />  
+	        <tx:method name="load*" read-only="true"/>
+	        <tx:method name="is*" read-only="true"/>
+			<tx:method name="has*" read-only="true"/>
+			
+	        <tx:method name="*" propagation="REQUIRED"/>  
+		</tx:attributes>
+	</tx:advice>
+	
+	<bean id="readWriteDataSourceTransactionProcessor" class="com.tsb.ischool.framework.common.ReadWriteDataSourceProcessor">  
+	   <property name="forceChoiceReadWhenWrite" value="false"/>  
+	</bean>  
+	
+	<aop:config expose-proxy="true">  
+        <!-- 只对业务逻辑层实施事务 -->  
+        <aop:pointcut id="txPointcut" expression="execution(* com.tsb.ischool..*Service.*(..))" />  
+        <aop:advisor advice-ref="defaultTxAdvice" pointcut-ref="txPointcut"/>  
+        <!-- 通过AOP切面实现读/写库选择 -->  
+        <aop:aspect order="-2147483648" ref="readWriteDataSourceTransactionProcessor">  
+           <aop:around pointcut-ref="txPointcut" method="determineReadOrWriteDB"/>  
+        </aop:aspect>  
+    </aop:config>   
+	
+<!-- 	
+	<aop:config>
+		<aop:pointcut id="serviceOperation"
+			expression="execution(* com.tsb.ischool..*Service.*(..))"/>
+		<aop:pointcut id="daoOperation"
+			expression="execution(* com.tsb.ischool..*Dao.*(..))"/>
+		<aop:advisor pointcut-ref="serviceOperation" advice-ref="defaultTxAdvice"/>
+		<aop:advisor pointcut-ref="daoOperation" advice-ref="defaultTxAdvice"/>
+	</aop:config> -->
+	
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+	   
+	  <!-- <property name="dataSource" ref="dataSource" /> -->
+	  <property name="dataSource" ref="readWriteDataSource" />
+	  <property name="configLocation" value="classpath:mybatis-config.xml"></property>
+	  <property name="mapperLocations" value="classpath*:/com/tsb/ischool/*/model/*.xml" />
+	  
+	  
+	   <!-- <property name="configurationProperties">
+	  	<value>
+	  		dialect=mysql
+	  	</value>
+	  </property>-->
+	 <property name="plugins">
+	  	<list>
+	  		<bean class="com.tsb.ischool.framework.interceptor.DiclectStatementHandlerInterceptor"></bean>
+	  		<!-- <bean class="com.tsb.resteasy.util.PowerSqlInterceptor"></bean> -->
+	  		
+	  		<!-- <bean class="com.tsb.resteasy.commons.utils.DiclectResultSetHandlerInterceptor"></bean> -->
+	  		
+	  	</list>
+	  </property> 
+	  
+	</bean>
+
+	<bean id="sqlSession" class="org.mybatis.spring.SqlSessionTemplate">
+  		<constructor-arg index="0" ref="sqlSessionFactory" />
+	</bean>
+	
+	<mvc:interceptors>  
+        <mvc:interceptor>  
+            <mvc:mapping path="/" />  
+            <bean class="com.tsb.ischool.framework.interceptor.AccessStatisticsIntceptor" />  
+        </mvc:interceptor>  
+    </mvc:interceptors>
+	
+</beans>

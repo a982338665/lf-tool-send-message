@@ -1,0 +1,57 @@
+17:10:28:799 	功能特点：
+1.遵照CMPP2.0协议实现，模拟了短信网关,支持CONNECT,SUBMIT,DELIVER,QUERY,CANCEL,TERMINATE消息。
+2.支持多个客户端登录,支持单连接和双连接类型，支持标准CMPP和亚信API.
+3.服务端自动生成Msgid,支持状态报告.
+4.支持对客户端进行鉴权，用户可以自行配置有效的客户端ICPID,SPID,PWD,和有效的IP地址。
+5.以二进制形式显示消息流内容，并且能够把消息包的每个字段都打印出来，当然这会影响一些效率。
+6.模拟网关不对submit各字段的合法性进行判断（如msgsrc必须是企业代码icpid,srcid必须是接入号spid,否则submitresp会返回错误码10和11.）,只要字段的长度合法，以及消息长度字段合法都认为是合法的.
+7.所有返回的状态报告都是正确的状态报告，状态报告的stat字段字段都填"DELIVRD".
+
+/***********************************************************************
+**	Author: 	Princetoad(北京风起水流软件工作室)
+**	Version:	1.00 May.29.04
+**	Homepage:	http://www.zealware.com
+**	Mail:		princetoad@zealware.com
+**	QQ:		50506711
+**	Msn:		princetoad2003@hotmail.com
+**	出售cmpp2,cmpp3,sgip1.2短消息网关开发接口库,更多信息清访问作者网站.
+**********************************************************************/LogSystemEvent模块启动.
+
+CMPP模块初始化失败,错误码: 10048.
+
+
+
+===============Finish Loging cmpp2smg V1.00================
+
+17:10:35:645 	功能特点：
+1.遵照CMPP2.0协议实现，模拟了短信网关,支持CONNECT,SUBMIT,DELIVER,QUERY,CANCEL,TERMINATE消息。
+2.支持多个客户端登录,支持单连接和双连接类型，支持标准CMPP和亚信API.
+3.服务端自动生成Msgid,支持状态报告.
+4.支持对客户端进行鉴权，用户可以自行配置有效的客户端ICPID,SPID,PWD,和有效的IP地址。
+5.以二进制形式显示消息流内容，并且能够把消息包的每个字段都打印出来，当然这会影响一些效率。
+6.模拟网关不对submit各字段的合法性进行判断（如msgsrc必须是企业代码icpid,srcid必须是接入号spid,否则submitresp会返回错误码10和11.）,只要字段的长度合法，以及消息长度字段合法都认为是合法的.
+7.所有返回的状态报告都是正确的状态报告，状态报告的stat字段字段都填"DELIVRD".
+
+/***********************************************************************
+**	Author: 	Princetoad(北京风起水流软件工作室)
+**	Version:	1.00 May.29.04
+**	Homepage:	http://www.zealware.com
+**	Mail:		princetoad@zealware.com
+**	QQ:		50506711
+**	Msn:		princetoad2003@hotmail.com
+**	出售cmpp2,cmpp3,sgip1.2短消息网关开发接口库,更多信息清访问作者网站.
+**********************************************************************/LogSystemEvent模块启动.
+
+CMPP模块初始化失败,错误码: 10048.
+
+LogSystemEvent模块启动.
+
+CMPP模块初始化失败,错误码: 10048.
+
+
+
+===============Finish Loging cmpp2smg V1.00================
+
+
+===============Finish Loging cmpp2smg V1.00================
+

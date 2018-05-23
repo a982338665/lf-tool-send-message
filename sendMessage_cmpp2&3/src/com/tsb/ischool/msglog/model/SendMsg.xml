@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper    
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"    
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+
+<mapper namespace="SendMsg">
+
+	<resultMap id="sendMsgTokenBean" type="com.tsb.ischool.msglog.model.SendMsgServiceBean" >
+		<result property="access_token" column="access_token" />
+		<result property="open_id" column="open_id" />
+	</resultMap>
+	
+	<select id="getUserTokenByXkId" parameterType="String" resultMap="sendMsgTokenBean">
+		SELECT access_token , open_id  FROM t_s_lcsendmgs WHERE xkid= #{xkSendUserId}
+	 </select>
+	 
+	  <select id="getLcIdByXkId" resultType="java.util.Map" parameterType="java.lang.String">
+		SELECT lc_id FROM t_sync_user_relation  INNER JOIN t_u_family 
+		ON xk_id=C_RUSERID WHERE C_USERID= #{sid}
+	</select>
+
+	  <select id="getLcIdByXkIdStu" resultType="java.lang.String" parameterType="java.lang.String">
+		SELECT lc_id FROM t_sync_user_relation  WHERE xk_id= #{0}
+	</select>
+</mapper>

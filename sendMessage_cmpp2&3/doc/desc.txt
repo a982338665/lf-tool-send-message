@@ -1,0 +1,10 @@
+
+发送甘肃临时短信（切记只能浏览器访问一次）
+http://localhost:8080/TSB_ISCHOOL_SENDMSG_SERVER/tmptubasicmsg/sendtmpmsg
+
+查看待发送队列个数
+http://localhost:8080/TSB_ISCHOOL_SENDMSG_SERVER/tmptubasicmsg/getqueuesize
+
+
+触发“发送失败的短信”重新发送
+http://localhost:8080/TSB_ISCHOOL_SENDMSG_SERVER/sendmsglog/query

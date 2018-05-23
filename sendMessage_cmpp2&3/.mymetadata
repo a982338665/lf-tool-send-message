@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project-module
+  type="WEB"
+  name="TSB_ISCHOOL_SENDMSG_SERVER"
+  id="myeclipse.1463141808087"
+  context-root="/TSB_ISCHOOL_SENDMSG_SERVER"
+  j2ee-spec="5.0"
+  archive="TSB_ISCHOOL_SENDMSG_SERVER.war">
+  <attributes>
+    <attribute name="webrootdir" value="WebRoot" />
+  </attributes>
+</project-module>
+
